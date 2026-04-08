@@ -177,6 +177,7 @@
       border-radius: inherit;
       opacity: 0;
       transition: opacity .3s;
+      pointer-events: none;
     }
     .card-v1::before {
       background: radial-gradient(ellipse at top left, rgba(78,205,196,.18), transparent 70%);
@@ -389,13 +390,13 @@
 
     .other-cards {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 24px;
       width: 100%;
       max-width: 1050px;
     }
 
-    .card-half { grid-column: span 2; }
+    .card-claude { grid-column: 2 / 3; }
 
     /* Bolt — electric blue */
     .card-bolt::before {
@@ -468,11 +469,11 @@
 
     @media (max-width: 700px) {
       .other-cards { grid-template-columns: 1fr 1fr; }
-      .card-half { grid-column: span 2; }
+      .card-claude { grid-column: 1 / -1; }
     }
     @media (max-width: 480px) {
       .other-cards { grid-template-columns: 1fr; }
-      .card-half { grid-column: span 1; }
+      .card-claude { grid-column: auto; }
     }
   </style>
 </head>
@@ -580,8 +581,35 @@
 
     <div class="other-cards">
 
-      <!-- Claude – half width -->
-      <div class="card card-claude card-half">
+      <!-- Lovable -->
+      <a class="card card-lovable" href="https://potato-dash-champs.lovable.app/" target="_blank" rel="noopener">
+        <div class="card-icon">💖</div>
+        <span class="card-version">Lovable</span>
+        <div class="card-title">Lovable Build</div>
+        <p class="card-desc">The Lovable.dev take on Potato Race — beautifully designed and ready to go.</p>
+        <span class="card-play-btn">💖 Play Lovable Version →</span>
+      </a>
+
+      <!-- AI Studio -->
+      <a class="card card-ai" href="ai_studio_code.html">
+        <div class="card-icon">✨</div>
+        <span class="card-version">Google AI Studio</span>
+        <div class="card-title">AI Studio Build</div>
+        <p class="card-desc">Built with Google's AI Studio — another take on the classic spud sprint.</p>
+        <span class="card-play-btn">✨ Play AI Studio Version →</span>
+      </a>
+
+      <!-- Bolt.new -->
+      <a class="card card-bolt" href="https://potato-race-game-oqz8.bolt.host/" target="_blank" rel="noopener">
+        <div class="card-icon">⚡</div>
+        <span class="card-version">Bolt.new</span>
+        <div class="card-title">Bolt Build</div>
+        <p class="card-desc">A fully playable version spun up with Bolt.new — fast, polished, and ready to race.</p>
+        <span class="card-play-btn">⚡ Play Bolt Version →</span>
+      </a>
+
+      <!-- Claude – centered bottom -->
+      <div class="card card-claude">
         <div class="card-icon">🤖</div>
         <span class="card-version">Claude · Progression Series</span>
         <div class="card-title">Claude Builds</div>
@@ -609,33 +637,6 @@
           </li>
         </ol>
       </div>
-
-      <!-- Bolt.new -->
-      <a class="card card-bolt" href="https://potato-race-game-oqz8.bolt.host/" target="_blank" rel="noopener">
-        <div class="card-icon">⚡</div>
-        <span class="card-version">Bolt.new</span>
-        <div class="card-title">Bolt Build</div>
-        <p class="card-desc">A fully playable version spun up with Bolt.new — fast, polished, and ready to race.</p>
-        <span class="card-play-btn">⚡ Play Bolt Version →</span>
-      </a>
-
-      <!-- Lovable -->
-      <a class="card card-lovable" href="https://potato-dash-champs.lovable.app/" target="_blank" rel="noopener">
-        <div class="card-icon">💖</div>
-        <span class="card-version">Lovable</span>
-        <div class="card-title">Lovable Build</div>
-        <p class="card-desc">The Lovable.dev take on Potato Race — beautifully designed and ready to go.</p>
-        <span class="card-play-btn">💖 Play Lovable Version →</span>
-      </a>
-
-      <!-- AI Studio -->
-      <a class="card card-ai" href="ai_studio_code.html">
-        <div class="card-icon">✨</div>
-        <span class="card-version">Google AI Studio</span>
-        <div class="card-title">AI Studio Build</div>
-        <p class="card-desc">Built with Google's AI Studio — another take on the classic spud sprint.</p>
-        <span class="card-play-btn">✨ Play AI Studio Version →</span>
-      </a>
 
     </div>
   </section>
