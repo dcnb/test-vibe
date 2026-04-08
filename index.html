@@ -374,6 +374,106 @@
       height: 1px;
       background: rgba(255,215,0,.18);
     }
+
+    /* ── other versions section ── */
+    .other-section {
+      padding: 0 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .other-section .cards-heading {
+      margin-bottom: 28px;
+    }
+
+    .other-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      width: 100%;
+      max-width: 1050px;
+    }
+
+    .card-half { grid-column: span 2; }
+
+    /* Bolt — electric blue */
+    .card-bolt::before {
+      background: radial-gradient(ellipse at top left, rgba(0,200,255,.18), transparent 70%);
+    }
+    .card-bolt .card-version { background: rgba(0,200,255,.18); color: #00C8FF; border: 1px solid rgba(0,200,255,.35); }
+    .card-bolt .card-title   { color: #00C8FF; }
+    .card-bolt .card-play-btn { background: linear-gradient(135deg, #00C8FF, #0080FF); color: #000; }
+
+    /* Lovable — rose pink */
+    .card-lovable::before {
+      background: radial-gradient(ellipse at top right, rgba(255,100,150,.18), transparent 70%);
+    }
+    .card-lovable .card-version { background: rgba(255,100,150,.18); color: #FF6496; border: 1px solid rgba(255,100,150,.35); }
+    .card-lovable .card-title   { color: #FF6496; }
+    .card-lovable .card-play-btn { background: linear-gradient(135deg, #FF6496, #FF2D6B); color: #fff; }
+
+    /* AI Studio — sky teal */
+    .card-ai::before {
+      background: radial-gradient(ellipse at bottom left, rgba(66,200,164,.18), transparent 70%);
+    }
+    .card-ai .card-version { background: rgba(66,200,164,.18); color: #42C8A4; border: 1px solid rgba(66,200,164,.35); }
+    .card-ai .card-title   { color: #42C8A4; }
+    .card-ai .card-play-btn { background: linear-gradient(135deg, #42C8A4, #1A9E7C); color: #000; }
+
+    /* Claude — warm coral */
+    .card-claude::before {
+      background: radial-gradient(ellipse at top center, rgba(255,140,80,.18), transparent 70%);
+    }
+    .card-claude .card-version { background: rgba(255,140,80,.18); color: #FF8C50; border: 1px solid rgba(255,140,80,.35); }
+    .card-claude .card-title   { color: #FF8C50; }
+    .card-claude .card-play-btn { background: linear-gradient(135deg, #FF8C50, #E05A1A); color: #fff; }
+
+    /* Claude progression links */
+    .claude-links {
+      list-style: none;
+      margin-top: 14px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .claude-links li {
+      font-size: .82rem;
+      color: rgba(255,255,255,.55);
+    }
+    .claude-links li a {
+      color: #FF8C50;
+      text-decoration: none;
+      font-weight: 700;
+      transition: color .2s;
+    }
+    .claude-links li a:hover { color: #FFB585; }
+    .claude-links .link-desc {
+      display: block;
+      font-size: .77rem;
+      color: rgba(255,255,255,.4);
+      margin-top: 1px;
+      padding-left: 20px;
+    }
+    .claude-links li::before {
+      content: none;
+    }
+    .step-num {
+      display: inline-block;
+      width: 18px;
+      font-weight: 900;
+      color: rgba(255,140,80,.6);
+    }
+
+    @media (max-width: 700px) {
+      .other-cards { grid-template-columns: 1fr 1fr; }
+      .card-half { grid-column: span 2; }
+    }
+    @media (max-width: 480px) {
+      .other-cards { grid-template-columns: 1fr; }
+      .card-half { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
@@ -472,6 +572,72 @@
     </div>
 
     <div class="sparkle-strip" aria-hidden="true">✨ 🥔 ✨</div>
+  </section>
+
+  <!-- OTHER VERSIONS -->
+  <section class="other-section">
+    <h2 class="cards-heading">🌐 Versions Built Elsewhere</h2>
+
+    <div class="other-cards">
+
+      <!-- Claude – half width -->
+      <div class="card card-claude card-half">
+        <div class="card-icon">🤖</div>
+        <span class="card-version">Claude · Progression Series</span>
+        <div class="card-title">Claude Builds</div>
+        <p class="card-desc">Four iterations coded step-by-step inside Claude, each one leveling up the drama.</p>
+        <ol class="claude-links">
+          <li>
+            <span class="step-num">1.</span>
+            <a href="https://claude.ai/public/artifacts/99cf0cbd-3654-4ddd-aff9-ce717df1ccc0" target="_blank" rel="noopener">First Version</a>
+            <span class="link-desc">Basic race — works, but too fast</span>
+          </li>
+          <li>
+            <span class="step-num">2.</span>
+            <a href="https://claude.ai/public/artifacts/cf07231e-2f9f-41f4-a355-27c4cbc00264" target="_blank" rel="noopener">Added Drama &amp; Style</a>
+            <span class="link-desc">Commentary, animations, and extra flair</span>
+          </li>
+          <li>
+            <span class="step-num">3.</span>
+            <a href="https://claude.ai/public/artifacts/dd1a63f9-4039-4f97-b04d-d031291b49ab" target="_blank" rel="noopener">U of I Themed</a>
+            <span class="link-desc">Go Vandals! University of Idaho edition</span>
+          </li>
+          <li>
+            <span class="step-num">4.</span>
+            <a href="https://claude.ai/public/artifacts/756589b7-2364-468b-a02a-d0a227b15137" target="_blank" rel="noopener">Tyson Always Loses</a>
+            <span class="link-desc">Specialized Vandal version — Tyson never wins</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Bolt.new -->
+      <a class="card card-bolt" href="https://potato-race-game-oqz8.bolt.host/" target="_blank" rel="noopener">
+        <div class="card-icon">⚡</div>
+        <span class="card-version">Bolt.new</span>
+        <div class="card-title">Bolt Build</div>
+        <p class="card-desc">A fully playable version spun up with Bolt.new — fast, polished, and ready to race.</p>
+        <span class="card-play-btn">⚡ Play Bolt Version →</span>
+      </a>
+
+      <!-- Lovable -->
+      <a class="card card-lovable" href="https://potato-dash-champs.lovable.app/" target="_blank" rel="noopener">
+        <div class="card-icon">💖</div>
+        <span class="card-version">Lovable</span>
+        <div class="card-title">Lovable Build</div>
+        <p class="card-desc">The Lovable.dev take on Potato Race — beautifully designed and ready to go.</p>
+        <span class="card-play-btn">💖 Play Lovable Version →</span>
+      </a>
+
+      <!-- AI Studio -->
+      <a class="card card-ai" href="ai_studio_code.html">
+        <div class="card-icon">✨</div>
+        <span class="card-version">Google AI Studio</span>
+        <div class="card-title">AI Studio Build</div>
+        <p class="card-desc">Built with Google's AI Studio — another take on the classic spud sprint.</p>
+        <span class="card-play-btn">✨ Play AI Studio Version →</span>
+      </a>
+
+    </div>
   </section>
 
   <!-- ORIGINAL PROMPT -->
