@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Potato Race!</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f1ea; }
+        #setup { margin-top: 50px; }
+        #track-container { position: relative; height: 300px; border-bottom: 5px dashed #5c4033; display: none;}
+        .racer { position: absolute; left: 0; font-size: 40px; transition: transform 0.1s; }
+        #countdown { font-size: 100px; display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
+        #winner-screen { display: none; margin-top: 50px; font-size: 30px;}
+    </style>
+</head>
+<body>
+    <h1>🥔 Potato Races 🥔</h1>
+
+    <div id="setup">
+        <input type="text" id="nameInput" placeholder="Enter name">
+        <button onclick="addContestant()">Add Contestant</button>
+        <ul id="contestantList"></ul>
+        <button id="startRaceBtn" onclick="startRace()" disabled>Start Race!</button>
+    </div>
+
+    <div id="countdown"></div>
+    <div id="track-container"></div>
+
+    <div id="winner-screen">
+        <h2 id="winner-text"></h2>
+        <button onclick="location.reload()">Reset Race</button>
+    </div>
+
+    <script>
+        let contestants = [];
+        const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#fffffc', '#ff5733', '#33ff57', '#3357ff'];
+
+        function addContestant() {
+            let name = document.getElementById("nameInput").value;
+            if(name && contestants.length < 12) {
+                contestants.push({name: name, color: colors[contestants.length], dist: 0});
+                document.getElementById("nameInput").value = '';
+                updateList();
+            }
+        }
+
+        function updateList() {
+            let list = document.getElementById("contestantList");
+            list.innerHTML = contestants.map(c => `<li style="color:${c.color}">${c.name}</li>`).join('');
+            document.getElementById("startRaceBtn").disabled = contestants.length < 2;
+        }
+
+        async function startRace() {
+            document.getElementById("setup").style.display = 'none';
+            document.getElementById("track-container").style.display = 'block';
+
+            // Create racers on track
+            let track = document.getElementById("track-container");
+            contestants.forEach((c, i) => {
+                let potato = document.createElement("div");
+                potato.className = 'racer';
+                potato.id = `racer-${i}`;
+                potato.style.top = `${(i * 20) + 20}px`;
+                potato.innerHTML = `<span style="background:${c.color}; border-radius:50%; padding:5px;">🥔</span> ${c.name}`;
+                track.appendChild(potato);
+            });
+
+            // Countdown
+            let countdown = document.getElementById("countdown");
+            countdown.style.display = 'block';
+            for(let i = 3; i > 0; i--) {
+                countdown.innerText = i;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            countdown.innerText = "Go!";
+            await new Promise(r => setTimeout(r, 800));
+            countdown.style.display = 'none';
+
+            runRace();
+        }
+
+        function runRace() {
+            let animation = setInterval(() => {
+                contestants.forEach((c, i) => {
+                    // Random pace between 5 and 20 pixels per frame
+                    c.dist += Math.random() * 15 + 5; 
+                    document.getElementById(`racer-${i}`).style.left = c.dist + 'px';
+
+                    // Check for winner
+                    if (c.dist > window.innerWidth - 100) {
+                        clearInterval(animation);
+                        declareWinner(c);
+                    }
+                });
+            }, 50);
+        }
+
+        function declareWinner(winner) {
+            document.getElementById("track-container").style.display = 'none';
+            document.getElementById("winner-screen").style.display = 'block';
+            document.getElementById("winner-text").innerHTML = `🏆 The Winner is ${winner.name}! 🏆<br><span style="font-size:100px; background:${winner.color}; border-radius:50%; padding:20px;">🥔</span>`;
+        }
+    </script>
+</body>
+</html>
