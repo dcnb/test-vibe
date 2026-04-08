@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🥔 Potato Race — Classic</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #1a0a00;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* ── screens ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── setup ── */
+    #setup-screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #3d1a00 0%, #1a0a00 70%);
+      padding: 36px 16px 60px;
+    }
+
+    .title {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 900;
+      color: #FFD700;
+      text-shadow: 2px 2px 8px rgba(0,0,0,.7);
+      text-align: center;
+    }
+    .subtitle {
+      margin-top: 6px;
+      color: #CD853F;
+      font-size: .95rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: rgba(255,215,0,.18);
+      border: 1px solid rgba(255,215,0,.35);
+      color: #FFD700;
+      padding: 3px 12px;
+      border-radius: 99px;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .setup-box {
+      margin-top: 28px;
+      background: rgba(255,255,255,.05);
+      border: 2px solid rgba(255,215,0,.2);
+      border-radius: 16px;
+      padding: 22px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .add-row { display: flex; gap: 9px; }
+    .cin {
+      flex: 1;
+      padding: 11px 13px;
+      border-radius: 8px;
+      border: 2px solid rgba(255,215,0,.3);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+    .cin::placeholder { color: rgba(255,255,255,.3); }
+    .cin:focus { border-color: #FFD700; }
+    .btn-add {
+      padding: 11px 16px;
+      background: #FFD700;
+      color: #1a0a00;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-add:hover { background: #FFC107; }
+    .err { min-height: 18px; font-size: .82rem; color: #FF6B6B; margin-top: 5px; }
+    .cnt { text-align: center; color: #CD853F; font-size: .83rem; margin: 5px 0 10px; }
+
+    .clist { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; max-height: 320px; overflow-y: auto; }
+    .citem {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 11px;
+      background: rgba(255,255,255,.06);
+      border-radius: 8px;
+      animation: slideIn .22s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-14px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,.25); }
+    .clabel { flex: 1; font-size: .93rem; font-weight: 600; }
+    .btn-rm { background: none; border: none; color: rgba(255,100,100,.6); cursor: pointer; font-size: 1rem; padding: 2px 5px; }
+    .btn-rm:hover { color: #FF6B6B; }
+
+    .btn-go {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      color: #1a0a00; border: none; border-radius: 10px;
+      font-size: 1.15rem; font-weight: 900; cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-go:disabled { background: rgba(255,255,255,.08); color: rgba(255,255,255,.25); cursor: not-allowed; }
+    .btn-go:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,215,0,.35); }
+
+    /* ── race screen ── */
+    #race-screen.active {
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #0a2000 0%, #1a0a00 70%);
+      padding: 28px 12px 50px;
+    }
+
+    .race-title { font-size: 1.6rem; font-weight: 900; color: #FFD700; margin-bottom: 20px; }
+
+    .track-wrap {
+      width: 100%; max-width: 900px;
+      background: rgba(0,0,0,.35);
+      border: 2px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .lane {
+      display: flex; align-items: center;
+      padding: 0 10px;
+      height: 72px;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      overflow: hidden;
+    }
+    .lane:nth-child(odd)  { background: #152b15; }
+    .lane:nth-child(even) { background: #112511; }
+
+    .lane-name {
+      width: 100px; min-width: 100px;
+      display: flex; align-items: center; gap: 7px;
+      font-size: .83rem; font-weight: 700;
+      z-index: 2;
+    }
+    .lane-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+    .lane-name-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 76px; }
+
+    .track {
+      flex: 1; position: relative; height: 100%;
+      overflow: hidden;
+    }
+    .finish-line {
+      position: absolute; right: 0; top: 0; bottom: 0;
+      width: 18px;
+      background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 0 0 / 9px 9px;
+      z-index: 3;
+    }
+
+    .racer {
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      user-select: none;
+      z-index: 2;
+      transition: left .05s linear;
+      will-change: left;
+      line-height: 1;
+    }
+
+    /* countdown */
+    .cd-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.78);
+    }
+    .cd-overlay.hidden { display: none; }
+    .cd-num {
+      font-size: clamp(6rem, 22vw, 14rem);
+      font-weight: 900; line-height: 1;
+      color: #FFD700;
+      text-shadow: 0 0 60px rgba(255,215,0,.6);
+      animation: bigPop .7s ease-out both;
+    }
+    .cd-go {
+      font-size: clamp(4rem, 16vw, 10rem);
+      font-weight: 900;
+      color: #6BCB77;
+      text-shadow: 0 0 60px rgba(107,203,119,.6);
+      animation: bigPop .55s ease-out both;
+    }
+    @keyframes bigPop {
+      0%   { transform: scale(.15); opacity: 0; }
+      65%  { transform: scale(1.22); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── winner screen ── */
+    #winner-screen.active {
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #1a0a3d 0%, #1a0a00 70%);
+      padding: 48px 16px 60px;
+    }
+    .trophy-spin { font-size: 5rem; animation: spin 2.5s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .win-headline {
+      margin-top: 12px; font-size: clamp(1.6rem,5vw,2.4rem);
+      font-weight: 900; color: #FFD700; text-align: center;
+    }
+    #winName {
+      font-size: clamp(2.4rem,8vw,3.8rem);
+      font-weight: 900; margin: 8px 0 4px; text-align: center;
+    }
+    .win-potato { font-size: 8rem; animation: bounce 0.9s ease-in-out infinite alternate; }
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-18px) rotate(8deg); }
+    }
+    .btn-reset {
+      margin-top: 28px; padding: 14px 42px;
+      background: linear-gradient(135deg, #6BCB77, #4D96FF);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 1.15rem; font-weight: 800; cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-reset:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(107,203,119,.4); }
+
+    /* confetti */
+    #confetti-container {
+      position: fixed; inset: 0; pointer-events: none; z-index: 99; overflow: hidden;
+    }
+    .confetto {
+      position: absolute; top: -12px;
+      width: 9px; height: 6px;
+      border-radius: 1px;
+      opacity: .9;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* home link */
+    .home-link {
+      position: fixed; top: 12px; left: 14px; z-index: 50;
+      background: rgba(255,215,0,.12);
+      border: 1px solid rgba(255,215,0,.3);
+      color: #FFD700; text-decoration: none;
+      padding: 6px 13px; border-radius: 8px;
+      font-size: .82rem; font-weight: 700;
+      transition: background .2s;
+    }
+    .home-link:hover { background: rgba(255,215,0,.25); }
+  </style>
+</head>
+<body>
+
+<a class="home-link" href="index.html">← Home</a>
+<div id="confetti-container"></div>
+
+<!-- SETUP -->
+<div id="setup-screen" class="screen active">
+  <div class="title">🥔 Potato Race!</div>
+  <div class="subtitle">The Classic Edition</div>
+  <span class="badge">v1</span>
+
+  <div class="setup-box">
+    <div class="add-row">
+      <input type="text" id="cin" class="cin" placeholder="Contestant name…" maxlength="18" autocomplete="off" />
+      <button class="btn-add" id="btnAdd">Add</button>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="cnt" id="cnt">0 / 12 contestants</div>
+    <ul class="clist" id="clist"></ul>
+    <button class="btn-go" id="btnGo" disabled>🏁 Start Race!</button>
+  </div>
+</div>
+
+<!-- RACE -->
+<div id="race-screen" class="screen">
+  <div class="race-title">🥔 And They're Off!</div>
+  <div class="track-wrap" id="trackWrap"></div>
+  <div class="cd-overlay" id="cdOverlay">
+    <div class="cd-num" id="cdText">3</div>
+  </div>
+</div>
+
+<!-- WINNER -->
+<div id="winner-screen" class="screen">
+  <div class="trophy-spin">🏆</div>
+  <div class="win-headline">🎉 We Have a Winner! 🎉</div>
+  <div id="winName"></div>
+  <div class="win-potato">🥔</div>
+  <button class="btn-reset" id="btnReset">🔄 Race Again!</button>
+</div>
+
+<script>
+const COLORS = [
+  '#FF6B6B','#4ECDC4','#FFD93D','#6BCB77',
+  '#4D96FF','#FF9F1C','#C77DFF','#FF6FC8',
+  '#48CAE4','#F4A261','#52B788','#E63946'
+];
+const EMOJIS = ['🥔','🍟','🥗','🍠','🧅','🌽','🫚','🧄','🫛','🥦','🌶️','🍆'];
+const MAX = 12;
+
+let contestants = [];
+let racers = [];
+let winner = null;
+let raceInterval = null;
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function randBetween(a, b) { return a + Math.random() * (b - a); }
+
+/* ── SETUP ── */
+function addContestant() {
+  const inp = document.getElementById('cin');
+  const err = document.getElementById('err');
+  const name = inp.value.trim();
+  err.textContent = '';
+  if (!name) { err.textContent = 'Enter a name.'; return; }
+  if (contestants.length >= MAX) { err.textContent = `Max ${MAX}.`; return; }
+  if (contestants.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    err.textContent = 'Name already taken!'; return;
+  }
+  const idx = contestants.length;
+  contestants.push({ name, color: COLORS[idx], emoji: EMOJIS[idx] });
+  inp.value = '';
+  inp.focus();
+  renderSetup();
+}
+function removeContestant(i) {
+  contestants.splice(i, 1);
+  contestants.forEach((c, idx) => { c.color = COLORS[idx]; c.emoji = EMOJIS[idx]; });
+  renderSetup();
+}
+function renderSetup() {
+  document.getElementById('cnt').textContent = `${contestants.length} / ${MAX} contestants`;
+  const ul = document.getElementById('clist');
+  ul.innerHTML = contestants.map((c, i) => `
+    <li class="citem">
+      <div class="dot" style="background:${c.color}"></div>
+      <span class="lane-dot" style="display:inline">${c.emoji}</span>
+      <span class="clabel">${esc(c.name)}</span>
+      <button class="btn-rm" data-i="${i}">✕</button>
+    </li>`).join('');
+  ul.querySelectorAll('.btn-rm').forEach(b =>
+    b.addEventListener('click', () => removeContestant(+b.dataset.i))
+  );
+  document.getElementById('btnGo').disabled = contestants.length < 2;
+}
+
+document.getElementById('btnAdd').addEventListener('click', addContestant);
+document.getElementById('cin').addEventListener('keydown', e => { if (e.key === 'Enter') addContestant(); });
+document.getElementById('btnGo').addEventListener('click', startRace);
+document.getElementById('btnReset').addEventListener('click', resetGame);
+
+/* ── RACE ── */
+function buildTrack() {
+  const wrap = document.getElementById('trackWrap');
+  wrap.innerHTML = '';
+  racers = contestants.map((c, i) => {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.innerHTML = `
+      <div class="lane-name">
+        <div class="lane-dot" style="background:${c.color}"></div>
+        <span class="lane-name-text">${esc(c.name)}</span>
+      </div>
+      <div class="track" id="track-${i}">
+        <div class="finish-line"></div>
+        <div class="racer" id="racer-${i}">${c.emoji}</div>
+      </div>`;
+    wrap.appendChild(lane);
+
+    return {
+      id: i,
+      name: c.name,
+      color: c.color,
+      el: null,
+      trackEl: null,
+      pct: 0,
+      speed: randBetween(0.28, 0.52),
+      finished: false,
+    };
+  });
+  // Grab elements after DOM insert
+  racers.forEach(r => {
+    r.el      = document.getElementById(`racer-${r.id}`);
+    r.trackEl = document.getElementById(`track-${r.id}`);
+  });
+}
+
+function startRace() {
+  buildTrack();
+  showScreen('race-screen');
+  winner = null;
+  runCountdown();
+}
+
+function runCountdown() {
+  const overlay = document.getElementById('cdOverlay');
+  const el      = document.getElementById('cdText');
+  overlay.classList.remove('hidden');
+  const steps = ['3','2','1','GO!'];
+  let i = 0;
+  function tick() {
+    if (i >= steps.length) { overlay.classList.add('hidden'); startActualRace(); return; }
+    const isGo = i === 3;
+    el.className = isGo ? 'cd-go' : 'cd-num';
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+    el.textContent = steps[i++];
+    setTimeout(tick, isGo ? 700 : 850);
+  }
+  tick();
+}
+
+function startActualRace() {
+  raceInterval = setInterval(tickRace, 40); // ~25fps
+}
+
+let tick = 0;
+function tickRace() {
+  tick++;
+  racers.forEach(r => {
+    if (r.finished) return;
+    // random pace variation
+    let s = r.speed;
+    if (Math.random() < 0.05) s *= randBetween(1.5, 3.5);   // burst
+    if (Math.random() < 0.015) s *= randBetween(0.1, 0.4);  // stumble
+    r.pct = Math.min(r.pct + s, 100);
+    const trackW = r.trackEl.clientWidth - 30; // 30 = finish-line width + racer
+    r.el.style.left = (r.pct / 100 * trackW) + 'px';
+
+    if (r.pct >= 100 && !winner) {
+      r.finished = true;
+      winner = r;
+      clearInterval(raceInterval);
+      setTimeout(() => showWinner(r), 700);
+    }
+  });
+}
+
+/* ── WINNER ── */
+function showWinner(w) {
+  showScreen('winner-screen');
+  const nameEl = document.getElementById('winName');
+  nameEl.textContent = w.name;
+  nameEl.style.color = w.color;
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.innerHTML = '';
+  for (let i = 0; i < 150; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetto';
+    el.style.cssText = [
+      `left:${Math.random() * 100}vw`,
+      `background:${COLORS[Math.floor(Math.random() * COLORS.length)]}`,
+      `animation-duration:${1.2 + Math.random() * 2}s`,
+      `animation-delay:${Math.random() * .8}s`,
+      `width:${6 + Math.random() * 7}px`,
+      `height:${4 + Math.random() * 5}px`,
+      `transform:rotate(${Math.random() * 360}deg)`,
+    ].join(';');
+    container.appendChild(el);
+  }
+}
+
+function resetGame() {
+  if (raceInterval) clearInterval(raceInterval);
+  raceInterval = null; tick = 0;
+  contestants = []; racers = []; winner = null;
+  document.getElementById('confetti-container').innerHTML = '';
+  renderSetup();
+  showScreen('setup-screen');
+  document.getElementById('cin').focus();
+}
+</script>
+</body>
+</html>

@@ -3,500 +3,1017 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🥔 Potato Race — Classic</title>
+  <title>🥔 Potato Race!</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ─── Reset & custom properties ──────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #1a0a00;
-      color: #fff;
-      min-height: 100vh;
-    }
+:root {
+  --bg:          #130a24;
+  --bg2:         #1e0f38;
+  --accent:      #f5a623;
+  --accent-glow: rgba(245, 166, 35, 0.45);
+  --text:        #f0e6d3;
+  --muted:       #9a88b5;
+  --track-bg:    #3b2a1f;
+  --track-line:  rgba(255,255,255,.08);
+  --radius:      12px;
+  --shadow:      0 6px 28px rgba(0,0,0,.55);
+}
 
-    /* ── screens ── */
-    .screen { display: none; }
-    .screen.active { display: block; }
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
 
-    /* ── setup ── */
-    #setup-screen.active {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      background: radial-gradient(ellipse at top, #3d1a00 0%, #1a0a00 70%);
-      padding: 36px 16px 60px;
-    }
+/* ─── Screens ─────────────────────────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 28px 16px 40px;
+}
+.screen.active { display: flex; }
 
-    .title {
-      font-size: clamp(2rem, 6vw, 3rem);
-      font-weight: 900;
-      color: #FFD700;
-      text-shadow: 2px 2px 8px rgba(0,0,0,.7);
-      text-align: center;
-    }
-    .subtitle {
-      margin-top: 6px;
-      color: #CD853F;
-      font-size: .95rem;
-      text-align: center;
-    }
-    .badge {
-      display: inline-block;
-      margin-top: 8px;
-      background: rgba(255,215,0,.18);
-      border: 1px solid rgba(255,215,0,.35);
-      color: #FFD700;
-      padding: 3px 12px;
-      border-radius: 99px;
-      font-size: .78rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
+/* ─── Setup Screen ────────────────────────────────────────────── */
+.logo {
+  font-size: clamp(2rem, 6vw, 3.6rem);
+  animation: glow 2.4s ease-in-out infinite alternate;
+  margin-bottom: 8px;
+}
 
-    .setup-box {
-      margin-top: 28px;
-      background: rgba(255,255,255,.05);
-      border: 2px solid rgba(255,215,0,.2);
-      border-radius: 16px;
-      padding: 22px;
-      width: 100%;
-      max-width: 480px;
-    }
-    .add-row { display: flex; gap: 9px; }
-    .cin {
-      flex: 1;
-      padding: 11px 13px;
-      border-radius: 8px;
-      border: 2px solid rgba(255,215,0,.3);
-      background: rgba(255,255,255,.08);
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-    }
-    .cin::placeholder { color: rgba(255,255,255,.3); }
-    .cin:focus { border-color: #FFD700; }
-    .btn-add {
-      padding: 11px 16px;
-      background: #FFD700;
-      color: #1a0a00;
-      border: none;
-      border-radius: 8px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .btn-add:hover { background: #FFC107; }
-    .err { min-height: 18px; font-size: .82rem; color: #FF6B6B; margin-top: 5px; }
-    .cnt { text-align: center; color: #CD853F; font-size: .83rem; margin: 5px 0 10px; }
+@keyframes glow {
+  from { text-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent-glow); }
+  to   { text-shadow: 0 0 22px var(--accent), 0 0 48px var(--accent-glow),
+                      0 0 70px rgba(245,166,35,.15); }
+}
 
-    .clist { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; max-height: 320px; overflow-y: auto; }
-    .citem {
-      display: flex; align-items: center; gap: 9px;
-      padding: 9px 11px;
-      background: rgba(255,255,255,.06);
-      border-radius: 8px;
-      animation: slideIn .22s ease;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-14px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    .dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,.25); }
-    .clabel { flex: 1; font-size: .93rem; font-weight: 600; }
-    .btn-rm { background: none; border: none; color: rgba(255,100,100,.6); cursor: pointer; font-size: 1rem; padding: 2px 5px; }
-    .btn-rm:hover { color: #FF6B6B; }
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
 
-    .btn-go {
-      width: 100%; padding: 14px;
-      background: linear-gradient(135deg, #FFD700, #FF8C00);
-      color: #1a0a00; border: none; border-radius: 10px;
-      font-size: 1.15rem; font-weight: 900; cursor: pointer;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .btn-go:disabled { background: rgba(255,255,255,.08); color: rgba(255,255,255,.25); cursor: not-allowed; }
-    .btn-go:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,215,0,.35); }
+/* Add-form */
+#add-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 4px;
+}
 
-    /* ── race screen ── */
-    #race-screen.active {
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-      background: radial-gradient(ellipse at top, #0a2000 0%, #1a0a00 70%);
-      padding: 28px 12px 50px;
-    }
+#name-input {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: var(--radius);
+  border: 2px solid #3d2a6a;
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color .2s;
+}
+#name-input:focus   { border-color: var(--accent); }
+#name-input.shake   { animation: shake .4s ease; }
+#name-input:disabled { opacity: .45; }
 
-    .race-title { font-size: 1.6rem; font-weight: 900; color: #FFD700; margin-bottom: 20px; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px); }
+  40%     { transform: translateX(8px); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
+}
 
-    .track-wrap {
-      width: 100%; max-width: 900px;
-      background: rgba(0,0,0,.35);
-      border: 2px solid rgba(255,255,255,.1);
-      border-radius: 12px;
-      overflow: hidden;
-    }
+#add-btn {
+  padding: 11px 22px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #1a0a2e;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+#add-btn:hover:not(:disabled)   { background: #f7bc50; }
+#add-btn:active:not(:disabled)  { transform: scale(.95); }
+#add-btn:disabled               { opacity: .38; cursor: default; }
 
-    .lane {
-      display: flex; align-items: center;
-      padding: 0 10px;
-      height: 72px;
-      position: relative;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-      overflow: hidden;
-    }
-    .lane:nth-child(odd)  { background: #152b15; }
-    .lane:nth-child(even) { background: #112511; }
+.error-msg {
+  color: #ff6b6b;
+  font-size: .85rem;
+  min-height: 1.3em;
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 480px;
+}
 
-    .lane-name {
-      width: 100px; min-width: 100px;
-      display: flex; align-items: center; gap: 7px;
-      font-size: .83rem; font-weight: 700;
-      z-index: 2;
-    }
-    .lane-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
-    .lane-name-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 76px; }
+/* Contestant list */
+#contestant-list {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+  max-height: 56vh;
+  overflow-y: auto;
+}
 
-    .track {
-      flex: 1; position: relative; height: 100%;
-      overflow: hidden;
-    }
-    .finish-line {
-      position: absolute; right: 0; top: 0; bottom: 0;
-      width: 18px;
-      background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 0 0 / 9px 9px;
-      z-index: 3;
-    }
+.contestant-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,.05);
+  border: 2px solid var(--c-color, #666);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  animation: slideIn .22s ease;
+}
 
-    .racer {
-      position: absolute;
-      left: 0; top: 50%;
-      transform: translateY(-50%);
-      font-size: 2rem;
-      user-select: none;
-      z-index: 2;
-      transition: left .05s linear;
-      will-change: left;
-      line-height: 1;
-    }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
 
-    /* countdown */
-    .cd-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.78);
-    }
-    .cd-overlay.hidden { display: none; }
-    .cd-num {
-      font-size: clamp(6rem, 22vw, 14rem);
-      font-weight: 900; line-height: 1;
-      color: #FFD700;
-      text-shadow: 0 0 60px rgba(255,215,0,.6);
-      animation: bigPop .7s ease-out both;
-    }
-    .cd-go {
-      font-size: clamp(4rem, 16vw, 10rem);
-      font-weight: 900;
-      color: #6BCB77;
-      text-shadow: 0 0 60px rgba(107,203,119,.6);
-      animation: bigPop .55s ease-out both;
-    }
-    @keyframes bigPop {
-      0%   { transform: scale(.15); opacity: 0; }
-      65%  { transform: scale(1.22); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+/* Mini potato in list */
+.entry-potato {
+  position: relative;
+  width: 42px;
+  height: 38px;
+  flex-shrink: 0;
+}
+.entry-avatar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  line-height: 1;
+  z-index: 1;
+}
+.entry-potato-body {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 25px;
+  background: var(--c-color, #c8a96e);
+  border-radius: 50% 56% 50% 56% / 56% 50% 56% 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+}
+.entry-potato-body::before,
+.entry-potato-body::after {
+  content: '';
+  position: absolute;
+  background: rgba(0,0,0,.22);
+  border-radius: 50%;
+}
+.entry-potato-body::before { width: 6px; height: 6px; top: 6px; left: 7px; }
+.entry-potato-body::after  { width: 4px; height: 4px; bottom: 5px; right: 8px; }
 
-    /* ── winner screen ── */
-    #winner-screen.active {
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-      background: radial-gradient(ellipse at top, #1a0a3d 0%, #1a0a00 70%);
-      padding: 48px 16px 60px;
-    }
-    .trophy-spin { font-size: 5rem; animation: spin 2.5s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .win-headline {
-      margin-top: 12px; font-size: clamp(1.6rem,5vw,2.4rem);
-      font-weight: 900; color: #FFD700; text-align: center;
-    }
-    #winName {
-      font-size: clamp(2.4rem,8vw,3.8rem);
-      font-weight: 900; margin: 8px 0 4px; text-align: center;
-    }
-    .win-potato { font-size: 8rem; animation: bounce 0.9s ease-in-out infinite alternate; }
-    @keyframes bounce {
-      from { transform: translateY(0); }
-      to   { transform: translateY(-18px) rotate(8deg); }
-    }
-    .btn-reset {
-      margin-top: 28px; padding: 14px 42px;
-      background: linear-gradient(135deg, #6BCB77, #4D96FF);
-      color: #fff; border: none; border-radius: 10px;
-      font-size: 1.15rem; font-weight: 800; cursor: pointer;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .btn-reset:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(107,203,119,.4); }
+.entry-name {
+  flex: 1;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--c-color, var(--text));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    /* confetti */
-    #confetti-container {
-      position: fixed; inset: 0; pointer-events: none; z-index: 99; overflow: hidden;
-    }
-    .confetto {
-      position: absolute; top: -12px;
-      width: 9px; height: 6px;
-      border-radius: 1px;
-      opacity: .9;
-      animation: fall linear forwards;
-    }
-    @keyframes fall {
-      to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-    }
+.entry-remove {
+  background: none;
+  border: 1px solid rgba(255,255,255,.18);
+  color: #ff6b6b;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: .78rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.entry-remove:hover { background: rgba(255,107,107,.2); }
 
-    /* home link */
-    .home-link {
-      position: fixed; top: 12px; left: 14px; z-index: 50;
-      background: rgba(255,215,0,.12);
-      border: 1px solid rgba(255,215,0,.3);
-      color: #FFD700; text-decoration: none;
-      padding: 6px 13px; border-radius: 8px;
-      font-size: .82rem; font-weight: 700;
-      transition: background .2s;
-    }
-    .home-link:hover { background: rgba(255,215,0,.25); }
+/* Primary button */
+.primary-btn {
+  padding: 14px 40px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #f5a623 0%, #e74c3c 100%);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(231,76,60,.38);
+  letter-spacing: .5px;
+  transition: transform .15s, box-shadow .15s;
+}
+.primary-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(231,76,60,.5);
+}
+.primary-btn:active:not(:disabled) { transform: translateY(0); }
+.primary-btn:disabled { opacity: .35; cursor: default; box-shadow: none; }
+
+/* ─── Race Screen ─────────────────────────────────────────────── */
+.race-title {
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  margin-bottom: 14px;
+  text-shadow: 0 0 10px var(--accent);
+}
+
+#race-wrapper {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Side posts */
+#start-post, #finish-post {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: 6px 5px;
+  background: rgba(255,255,255,.07);
+  border-radius: 6px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+#finish-post { color: var(--accent); }
+
+/* Lanes container */
+#lanes-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--track-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid #5d3f2a;
+  box-shadow: var(--shadow), inset 0 0 40px rgba(0,0,0,.3);
+}
+
+/* Individual lane */
+.lane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px dashed var(--track-line);
+  position: relative;
+}
+.lane:last-child { border-bottom: none; }
+
+/* Alternating lane tint for readability */
+.lane:nth-child(even) { background: rgba(255,255,255,.028); }
+
+.lane-label {
+  width: 88px;
+  padding: 0 8px 0 10px;
+  font-size: .7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  flex-shrink: 0;
+  border-right: 2px solid rgba(255,255,255,.09);
+}
+
+.lane-track {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Racer ── */
+.racer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto 0;
+  width: 50px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.racer-avatar {
+  font-size: .95rem;
+  line-height: 1;
+  margin-bottom: -1px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.racer-potato {
+  width: 46px;
+  height: 31px;
+  border-radius: 50% 56% 50% 56% / 56% 50% 56% 50%;
+  box-shadow: 0 3px 7px rgba(0,0,0,.45);
+  position: relative;
+}
+.racer-potato::before,
+.racer-potato::after {
+  content: '';
+  position: absolute;
+  background: rgba(0,0,0,.22);
+  border-radius: 50%;
+}
+.racer-potato::before { width: 7px; height: 7px; top: 7px;    left: 9px;  }
+.racer-potato::after  { width: 5px; height: 5px; bottom: 6px; right: 10px; }
+
+/* Speed-burst visual */
+.racer.burst .racer-potato {
+  filter: brightness(1.25);
+}
+.racer.burst::after {
+  content: '💨';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .85rem;
+  pointer-events: none;
+  animation: poof .4s ease forwards;
+}
+
+@keyframes poof {
+  from { opacity: 1; transform: translateY(-50%) translateX(0); }
+  to   { opacity: 0; transform: translateY(-50%) translateX(-16px); }
+}
+
+/* Stumble visual */
+.racer.stumble .racer-potato {
+  filter: brightness(.8) saturate(.6);
+}
+
+/* Finished state */
+.racer.finished .racer-potato {
+  animation: celebrate .5s ease infinite alternate;
+}
+@keyframes celebrate {
+  from { transform: scale(1) rotate(-6deg); }
+  to   { transform: scale(1.12) rotate(6deg); }
+}
+
+/* ── Countdown overlay ── */
+#countdown-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.76);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+#countdown-overlay.hidden { display: none; }
+
+#countdown-num {
+  font-size: clamp(5rem, 22vw, 11rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent-glow);
+  line-height: 1;
+}
+#countdown-num.pop {
+  animation: popIn .75s cubic-bezier(.36,1.56,.64,1) forwards;
+}
+#countdown-num.go {
+  animation: popIn .5s cubic-bezier(.36,1.56,.64,1) forwards,
+             rainbow .5s linear infinite;
+}
+
+@keyframes popIn {
+  0%   { transform: scale(.2);    opacity: 0; }
+  65%  { transform: scale(1.18);  opacity: 1; }
+  100% { transform: scale(1);     opacity: 1; }
+}
+@keyframes rainbow {
+  0%   { color: #ff6b6b; }
+  16%  { color: #ffa94d; }
+  33%  { color: #ffd43b; }
+  50%  { color: #69db7c; }
+  66%  { color: #4dabf7; }
+  83%  { color: #da77f2; }
+  100% { color: #ff6b6b; }
+}
+
+/* ─── Results Screen ──────────────────────────────────────────── */
+#results-screen {
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -24px;
+  animation: confettiFall var(--dur, 3s) var(--delay, 0s) ease-in forwards;
+}
+
+@keyframes confettiFall {
+  0%   { top: -24px;  opacity: 1; transform: rotate(0deg)   translateX(0); }
+  40%  {              opacity: 1; }
+  100% { top: 108vh;  opacity: 0; transform: rotate(720deg) translateX(var(--drift, 0px)); }
+}
+
+#winner-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,.06);
+  border: 2px solid rgba(245,166,35,.35);
+  border-radius: 24px;
+  padding: 44px 56px;
+  box-shadow: var(--shadow), 0 0 70px rgba(245,166,35,.18);
+  margin-bottom: 36px;
+  animation: slideUp .55s cubic-bezier(.25,1,.5,1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(50px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.trophy {
+  font-size: 5.5rem;
+  line-height: 1;
+  animation: trophyBounce .9s ease infinite alternate;
+  filter: drop-shadow(0 0 22px rgba(245,166,35,.75));
+}
+@keyframes trophyBounce {
+  from { transform: translateY(0)    rotate(-3deg); }
+  to   { transform: translateY(-14px) rotate(3deg);  }
+}
+
+.winner-label {
+  font-size: 1.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+}
+
+/* Winner potato (large) */
+#winner-potato {
+  position: relative;
+  width: 72px;
+  height: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.result-avatar {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: -2px;
+  z-index: 1;
+}
+.result-potato-body {
+  width: 64px;
+  height: 43px;
+  border-radius: 50% 56% 50% 56% / 56% 50% 56% 50%;
+  box-shadow: 0 5px 14px rgba(0,0,0,.45);
+  position: relative;
+}
+.result-potato-body::before,
+.result-potato-body::after {
+  content: '';
+  position: absolute;
+  background: rgba(0,0,0,.22);
+  border-radius: 50%;
+}
+.result-potato-body::before { width: 9px;  height: 9px;  top: 9px;    left: 11px; }
+.result-potato-body::after  { width: 7px;  height: 7px;  bottom: 8px; right: 12px; }
+
+#winner-name {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 3px; }
   </style>
 </head>
 <body>
+<a href="index.html" style="position:fixed;top:12px;left:14px;z-index:999;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);color:#f5a623;text-decoration:none;padding:6px 13px;border-radius:8px;font-size:.82rem;font-weight:700;transition:background .2s">← Home</a>
 
-<a class="home-link" href="index.html">← Home</a>
-<div id="confetti-container"></div>
+  <!-- ══════════════════════════════════════════ Setup Screen ══ -->
+  <div id="setup-screen" class="screen active">
+    <h1 class="logo">🥔 Potato Race!</h1>
+    <p class="subtitle">Add 2–12 contestants, then start the race!</p>
 
-<!-- SETUP -->
-<div id="setup-screen" class="screen active">
-  <div class="title">🥔 Potato Race!</div>
-  <div class="subtitle">The Classic Edition</div>
-  <span class="badge">v1</span>
-
-  <div class="setup-box">
-    <div class="add-row">
-      <input type="text" id="cin" class="cin" placeholder="Contestant name…" maxlength="18" autocomplete="off" />
-      <button class="btn-add" id="btnAdd">Add</button>
+    <div id="add-form">
+      <input id="name-input" type="text" maxlength="20"
+             placeholder="Enter contestant name…" autocomplete="off" />
+      <button id="add-btn">Add</button>
     </div>
-    <div class="err" id="err"></div>
-    <div class="cnt" id="cnt">0 / 12 contestants</div>
-    <ul class="clist" id="clist"></ul>
-    <button class="btn-go" id="btnGo" disabled>🏁 Start Race!</button>
+    <p id="add-error" class="error-msg">&nbsp;</p>
+
+    <div id="contestant-list"></div>
+
+    <button id="start-btn" class="primary-btn" disabled>🏁 Start Race!</button>
   </div>
-</div>
 
-<!-- RACE -->
-<div id="race-screen" class="screen">
-  <div class="race-title">🥔 And They're Off!</div>
-  <div class="track-wrap" id="trackWrap"></div>
-  <div class="cd-overlay" id="cdOverlay">
-    <div class="cd-num" id="cdText">3</div>
+  <!-- ══════════════════════════════════════════ Race Screen ═══ -->
+  <div id="race-screen" class="screen">
+
+    <div id="countdown-overlay" class="hidden">
+      <div id="countdown-num">3</div>
+    </div>
+
+    <h2 class="race-title">🥔 Potato Race!</h2>
+
+    <div id="race-wrapper">
+      <div id="start-post">START</div>
+      <div id="lanes-container"></div>
+      <div id="finish-post">FINISH&nbsp;🏁</div>
+    </div>
   </div>
-</div>
 
-<!-- WINNER -->
-<div id="winner-screen" class="screen">
-  <div class="trophy-spin">🏆</div>
-  <div class="win-headline">🎉 We Have a Winner! 🎉</div>
-  <div id="winName"></div>
-  <div class="win-potato">🥔</div>
-  <button class="btn-reset" id="btnReset">🔄 Race Again!</button>
-</div>
+  <!-- ════════════════════════════════════════ Results Screen ══ -->
+  <div id="results-screen" class="screen">
+    <div id="confetti-container" aria-hidden="true"></div>
 
-<script>
-const COLORS = [
-  '#FF6B6B','#4ECDC4','#FFD93D','#6BCB77',
-  '#4D96FF','#FF9F1C','#C77DFF','#FF6FC8',
-  '#48CAE4','#F4A261','#52B788','#E63946'
+    <div id="winner-panel">
+      <div class="trophy" aria-label="trophy">🏆</div>
+      <h2 class="winner-label">Winner!</h2>
+      <div id="winner-potato" aria-hidden="true"></div>
+      <div id="winner-name"></div>
+    </div>
+
+    <button id="reset-btn" class="primary-btn">🔄 Race Again!</button>
+  </div>
+
+  <script>
+'use strict';
+
+/* ─── Constants ──────────────────────────────────────────────── */
+
+const AVATARS = [
+  '🧑‍🌾', '👩‍🍳', '🧙', '🧛', '🤠', '🥷',
+  '🧜', '🧚', '👾', '🤖', '🎅', '🦸',
 ];
-const EMOJIS = ['🥔','🍟','🥗','🍠','🧅','🌽','🫚','🧄','🫛','🥦','🌶️','🍆'];
-const MAX = 12;
 
+const COLORS = [
+  '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71',
+  '#1abc9c', '#3498db', '#9b59b6', '#e91e63',
+  '#ff5722', '#00bcd4', '#8bc34a', '#ff9800',
+];
+
+/* ─── State ──────────────────────────────────────────────────── */
+
+/** @type {Array<Contestant>} */
 let contestants = [];
-let racers = [];
+
+/** @type {'setup'|'countdown'|'racing'|'finished'} */
+let gameState = 'setup';
+
+let animationId = null;
+let lastTimestamp = 0;
+
+/** @type {Contestant|null} */
 let winner = null;
-let raceInterval = null;
 
-function esc(s) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(s));
-  return d.innerHTML;
-}
+/**
+ * @typedef {Object} Contestant
+ * @property {number}  id
+ * @property {string}  name
+ * @property {string}  avatar
+ * @property {string}  color
+ * @property {number}  position        – 0–100 (%)
+ * @property {number}  speed           – % per second
+ * @property {number}  speedTimer      – ms since last speed change
+ * @property {number}  nextSpeedChange – ms until next speed change
+ * @property {boolean} finished
+ * @property {HTMLElement|null} el         – .racer element
+ * @property {HTMLElement|null} trackEl    – .lane-track element
+ */
+
+/* ─── DOM refs ───────────────────────────────────────────────── */
+
+const setupScreen   = document.getElementById('setup-screen');
+const raceScreen    = document.getElementById('race-screen');
+const resultsScreen = document.getElementById('results-screen');
+
+const nameInput  = document.getElementById('name-input');
+const addBtn     = document.getElementById('add-btn');
+const startBtn   = document.getElementById('start-btn');
+const errorMsg   = document.getElementById('add-error');
+const listEl     = document.getElementById('contestant-list');
+const lanesEl    = document.getElementById('lanes-container');
+
+const countdownOverlay = document.getElementById('countdown-overlay');
+const countdownNum     = document.getElementById('countdown-num');
+
+const winnerPotatoEl = document.getElementById('winner-potato');
+const winnerNameEl   = document.getElementById('winner-name');
+const resetBtn       = document.getElementById('reset-btn');
+const confettiEl     = document.getElementById('confetti-container');
+
+/* ─── Screen switching ───────────────────────────────────────── */
+
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  [setupScreen, raceScreen, resultsScreen].forEach(s => s.classList.remove('active'));
+  document.getElementById(`${id}-screen`).classList.add('active');
 }
-function randBetween(a, b) { return a + Math.random() * (b - a); }
 
-/* ── SETUP ── */
+/* ─── Setup helpers ──────────────────────────────────────────── */
+
+function setError(msg) {
+  errorMsg.textContent = msg || '\u00a0';
+}
+
 function addContestant() {
-  const inp = document.getElementById('cin');
-  const err = document.getElementById('err');
-  const name = inp.value.trim();
-  err.textContent = '';
-  if (!name) { err.textContent = 'Enter a name.'; return; }
-  if (contestants.length >= MAX) { err.textContent = `Max ${MAX}.`; return; }
-  if (contestants.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-    err.textContent = 'Name already taken!'; return;
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    nameInput.focus();
+    return;
   }
+
+  if (contestants.length >= 12) {
+    setError('Maximum 12 contestants reached.');
+    return;
+  }
+
+  if (contestants.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    setError('That name is already taken — try another!');
+    nameInput.classList.add('shake');
+    nameInput.addEventListener('animationend', () => nameInput.classList.remove('shake'), { once: true });
+    return;
+  }
+
+  setError('');
+
   const idx = contestants.length;
-  contestants.push({ name, color: COLORS[idx], emoji: EMOJIS[idx] });
-  inp.value = '';
-  inp.focus();
-  renderSetup();
-}
-function removeContestant(i) {
-  contestants.splice(i, 1);
-  contestants.forEach((c, idx) => { c.color = COLORS[idx]; c.emoji = EMOJIS[idx]; });
-  renderSetup();
-}
-function renderSetup() {
-  document.getElementById('cnt').textContent = `${contestants.length} / ${MAX} contestants`;
-  const ul = document.getElementById('clist');
-  ul.innerHTML = contestants.map((c, i) => `
-    <li class="citem">
-      <div class="dot" style="background:${c.color}"></div>
-      <span class="lane-dot" style="display:inline">${c.emoji}</span>
-      <span class="clabel">${esc(c.name)}</span>
-      <button class="btn-rm" data-i="${i}">✕</button>
-    </li>`).join('');
-  ul.querySelectorAll('.btn-rm').forEach(b =>
-    b.addEventListener('click', () => removeContestant(+b.dataset.i))
-  );
-  document.getElementById('btnGo').disabled = contestants.length < 2;
+  contestants.push({
+    id: idx,
+    name,
+    avatar: AVATARS[idx % AVATARS.length],
+    color:  COLORS[idx % COLORS.length],
+    position: 0,
+    speed: 0,
+    speedTimer: 0,
+    nextSpeedChange: 0,
+    finished: false,
+    el: null,
+    trackEl: null,
+  });
+
+  nameInput.value = '';
+  nameInput.focus();
+  renderList();
+  startBtn.disabled = contestants.length < 2;
+
+  if (contestants.length >= 12) {
+    addBtn.disabled    = true;
+    nameInput.disabled = true;
+    nameInput.placeholder = 'Max 12 contestants reached';
+  }
 }
 
-document.getElementById('btnAdd').addEventListener('click', addContestant);
-document.getElementById('cin').addEventListener('keydown', e => { if (e.key === 'Enter') addContestant(); });
-document.getElementById('btnGo').addEventListener('click', startRace);
-document.getElementById('btnReset').addEventListener('click', resetGame);
+function removeContestant(idx) {
+  contestants.splice(idx, 1);
 
-/* ── RACE ── */
-function buildTrack() {
-  const wrap = document.getElementById('trackWrap');
-  wrap.innerHTML = '';
-  racers = contestants.map((c, i) => {
-    const lane = document.createElement('div');
-    lane.className = 'lane';
-    lane.innerHTML = `
-      <div class="lane-name">
-        <div class="lane-dot" style="background:${c.color}"></div>
-        <span class="lane-name-text">${esc(c.name)}</span>
+  // Re-index colours/avatars so they stay consistent
+  contestants.forEach((c, i) => {
+    c.id     = i;
+    c.color  = COLORS[i % COLORS.length];
+    c.avatar = AVATARS[i % AVATARS.length];
+  });
+
+  addBtn.disabled    = false;
+  nameInput.disabled = false;
+  nameInput.placeholder = 'Enter contestant name…';
+  setError('');
+  renderList();
+  startBtn.disabled = contestants.length < 2;
+}
+
+function renderList() {
+  listEl.innerHTML = '';
+  contestants.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'contestant-entry';
+    div.style.setProperty('--c-color', c.color);
+
+    div.innerHTML = `
+      <div class="entry-potato">
+        <span class="entry-avatar">${c.avatar}</span>
+        <div class="entry-potato-body"></div>
       </div>
-      <div class="track" id="track-${i}">
-        <div class="finish-line"></div>
-        <div class="racer" id="racer-${i}">${c.emoji}</div>
-      </div>`;
-    wrap.appendChild(lane);
+      <span class="entry-name">${escHtml(c.name)}</span>
+      <button class="entry-remove" aria-label="Remove ${escHtml(c.name)}">✕</button>
+    `;
 
-    return {
-      id: i,
-      name: c.name,
-      color: c.color,
-      el: null,
-      trackEl: null,
-      pct: 0,
-      speed: randBetween(0.28, 0.52),
-      finished: false,
-    };
-  });
-  // Grab elements after DOM insert
-  racers.forEach(r => {
-    r.el      = document.getElementById(`racer-${r.id}`);
-    r.trackEl = document.getElementById(`track-${r.id}`);
+    div.querySelector('.entry-remove').addEventListener('click', () => removeContestant(i));
+    listEl.appendChild(div);
   });
 }
+
+/* ─── Race setup ─────────────────────────────────────────────── */
 
 function startRace() {
+  winner    = null;
+  gameState = 'countdown';
+  showScreen('race');
   buildTrack();
-  showScreen('race-screen');
-  winner = null;
   runCountdown();
 }
 
-function runCountdown() {
-  const overlay = document.getElementById('cdOverlay');
-  const el      = document.getElementById('cdText');
-  overlay.classList.remove('hidden');
-  const steps = ['3','2','1','GO!'];
-  let i = 0;
-  function tick() {
-    if (i >= steps.length) { overlay.classList.add('hidden'); startActualRace(); return; }
-    const isGo = i === 3;
-    el.className = isGo ? 'cd-go' : 'cd-num';
-    el.style.animation = 'none';
-    el.offsetHeight; // reflow
-    el.style.animation = '';
-    el.textContent = steps[i++];
-    setTimeout(tick, isGo ? 700 : 850);
-  }
-  tick();
-}
+function buildTrack() {
+  lanesEl.innerHTML = '';
 
-function startActualRace() {
-  raceInterval = setInterval(tickRace, 40); // ~25fps
-}
+  contestants.forEach((c, i) => {
+    c.position        = 0;
+    c.speed           = randomBetween(8, 14);
+    c.speedTimer      = 0;
+    c.nextSpeedChange = randomBetween(400, 1100);
+    c.finished        = false;
 
-let tick = 0;
-function tickRace() {
-  tick++;
-  racers.forEach(r => {
-    if (r.finished) return;
-    // random pace variation
-    let s = r.speed;
-    if (Math.random() < 0.05) s *= randBetween(1.5, 3.5);   // burst
-    if (Math.random() < 0.015) s *= randBetween(0.1, 0.4);  // stumble
-    r.pct = Math.min(r.pct + s, 100);
-    const trackW = r.trackEl.clientWidth - 30; // 30 = finish-line width + racer
-    r.el.style.left = (r.pct / 100 * trackW) + 'px';
+    const lane = document.createElement('div');
+    lane.className = 'lane';
 
-    if (r.pct >= 100 && !winner) {
-      r.finished = true;
-      winner = r;
-      clearInterval(raceInterval);
-      setTimeout(() => showWinner(r), 700);
-    }
+    const label = document.createElement('div');
+    label.className  = 'lane-label';
+    label.style.color = c.color;
+    label.textContent = c.name;
+
+    const track = document.createElement('div');
+    track.className = 'lane-track';
+
+    const racer = document.createElement('div');
+    racer.className = 'racer';
+    racer.id        = `racer-${i}`;
+    racer.innerHTML = `
+      <span class="racer-avatar">${c.avatar}</span>
+      <div class="racer-potato" style="background:${c.color}"></div>
+    `;
+
+    track.appendChild(racer);
+    lane.appendChild(label);
+    lane.appendChild(track);
+    lanesEl.appendChild(lane);
+
+    c.el      = racer;
+    c.trackEl = track;
   });
 }
 
-/* ── WINNER ── */
-function showWinner(w) {
-  showScreen('winner-screen');
-  const nameEl = document.getElementById('winName');
-  nameEl.textContent = w.name;
-  nameEl.style.color = w.color;
-  launchConfetti();
+/* ─── Countdown ──────────────────────────────────────────────── */
+
+function runCountdown() {
+  countdownOverlay.classList.remove('hidden');
+  let count = 3;
+
+  function tick() {
+    if (count > 0) {
+      countdownNum.textContent = count;
+      reflow(countdownNum);
+      countdownNum.className = 'pop';
+      count--;
+      setTimeout(tick, 1000);
+    } else {
+      countdownNum.textContent = 'GO! 🚀';
+      reflow(countdownNum);
+      countdownNum.className = 'go';
+      setTimeout(() => {
+        countdownOverlay.classList.add('hidden');
+        countdownNum.className = '';
+        beginRacing();
+      }, 900);
+    }
+  }
+
+  tick();
 }
 
-function launchConfetti() {
-  const container = document.getElementById('confetti-container');
-  container.innerHTML = '';
-  for (let i = 0; i < 150; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetto';
-    el.style.cssText = [
-      `left:${Math.random() * 100}vw`,
-      `background:${COLORS[Math.floor(Math.random() * COLORS.length)]}`,
-      `animation-duration:${1.2 + Math.random() * 2}s`,
-      `animation-delay:${Math.random() * .8}s`,
-      `width:${6 + Math.random() * 7}px`,
-      `height:${4 + Math.random() * 5}px`,
-      `transform:rotate(${Math.random() * 360}deg)`,
-    ].join(';');
-    container.appendChild(el);
+/** Force a style recalculation to restart CSS animations */
+function reflow(el) {
+  // eslint-disable-next-line no-unused-expressions
+  el.offsetWidth;
+}
+
+/* ─── Race loop ──────────────────────────────────────────────── */
+
+function beginRacing() {
+  gameState     = 'racing';
+  lastTimestamp = 0;
+  animationId   = requestAnimationFrame(raceLoop);
+}
+
+function raceLoop(timestamp) {
+  if (gameState !== 'racing') return;
+
+  if (!lastTimestamp) lastTimestamp = timestamp;
+
+  // Cap delta to 50 ms so a hidden/paused tab doesn't cause huge jumps
+  const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+  lastTimestamp = timestamp;
+
+  let newWinner = null;
+
+  contestants.forEach(c => {
+    if (c.finished) return;
+
+    // Periodically pick a new random speed
+    c.speedTimer += dt * 1000;
+    if (c.speedTimer >= c.nextSpeedChange) {
+      c.speedTimer      = 0;
+      c.nextSpeedChange = randomBetween(200, 900);
+      applyNewSpeed(c, timestamp);
+    }
+
+    c.position += c.speed * dt;
+
+    if (c.position >= 100) {
+      c.position = 100;
+      c.finished = true;
+      if (!newWinner && !winner) newWinner = c;
+    }
+
+    positionRacer(c, timestamp);
+  });
+
+  if (newWinner) {
+    winner    = newWinner;
+    gameState = 'finished';
+    if (animationId) cancelAnimationFrame(animationId);
+    winner.el.classList.add('finished');
+    setTimeout(showResults, 1000);
+    return;
+  }
+
+  animationId = requestAnimationFrame(raceLoop);
+}
+
+/**
+ * Choose a new speed for a contestant.
+ * Bursts happen ~20 % of the time, stumbles ~15 % of the time.
+ */
+function applyNewSpeed(c, timestamp) {
+  const r = Math.random();
+  let burst    = false;
+  let stumble  = false;
+
+  if (r < 0.20) {
+    c.speed = randomBetween(28, 45); // burst
+    burst   = true;
+  } else if (r < 0.35) {
+    c.speed  = randomBetween(1, 4);  // stumble
+    stumble  = true;
+  } else {
+    c.speed = randomBetween(8, 18);  // normal
+  }
+
+  if (c.el) {
+    c.el.classList.toggle('burst',   burst);
+    c.el.classList.toggle('stumble', stumble);
   }
 }
 
-function resetGame() {
-  if (raceInterval) clearInterval(raceInterval);
-  raceInterval = null; tick = 0;
-  contestants = []; racers = []; winner = null;
-  document.getElementById('confetti-container').innerHTML = '';
-  renderSetup();
-  showScreen('setup-screen');
-  document.getElementById('cin').focus();
+/** Move the racer element to its current position with a subtle bounce. */
+function positionRacer(c, timestamp) {
+  if (!c.el || !c.trackEl) return;
+
+  const trackW  = c.trackEl.clientWidth;
+  const racerW  = 50; // px, matches CSS
+  const maxPx   = Math.max(0, trackW - racerW - 6);
+  const offsetX = (c.position / 100) * maxPx;
+
+  // Different phase per contestant so they don't all bounce together
+  const bounce = Math.sin(timestamp / 110 + c.id * 0.9) * 3;
+
+  c.el.style.transform = `translateX(${offsetX}px) translateY(${bounce}px)`;
 }
-</script>
+
+/* ─── Results ────────────────────────────────────────────────── */
+
+function showResults() {
+  showScreen('results');
+
+  winnerNameEl.textContent  = winner.name;
+  winnerNameEl.style.color  = winner.color;
+
+  winnerPotatoEl.innerHTML = `
+    <span class="result-avatar">${winner.avatar}</span>
+    <div class="result-potato-body" style="background:${winner.color}"></div>
+  `;
+
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  confettiEl.innerHTML = '';
+  const count = 90;
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+
+    const size  = 7 + Math.random() * 9;
+    const drift = (Math.random() - 0.5) * 220;
+    const isCircle = Math.random() > 0.5;
+
+    Object.assign(piece.style, {
+      left:            `${Math.random() * 100}%`,
+      width:           `${size}px`,
+      height:          `${size}px`,
+      background:      COLORS[Math.floor(Math.random() * COLORS.length)],
+      borderRadius:    isCircle ? '50%' : '2px',
+      '--dur':         `${2 + Math.random() * 2}s`,
+      '--delay':       `${Math.random() * 2.2}s`,
+      '--drift':       `${drift}px`,
+    });
+
+    confettiEl.appendChild(piece);
+  }
+}
+
+/* ─── Reset ──────────────────────────────────────────────────── */
+
+function resetGame() {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+
+  contestants        = [];
+  winner             = null;
+  gameState          = 'setup';
+  listEl.innerHTML   = '';
+  nameInput.value    = '';
+  nameInput.disabled = false;
+  nameInput.placeholder = 'Enter contestant name…';
+  addBtn.disabled    = false;
+  startBtn.disabled  = true;
+  setError('');
+
+  showScreen('setup');
+  nameInput.focus();
+}
+
+/* ─── Utilities ──────────────────────────────────────────────── */
+
+function randomBetween(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+/** Minimal HTML-entity escaping to avoid XSS in innerHTML. */
+function escHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ─── Event listeners ────────────────────────────────────────── */
+
+addBtn.addEventListener('click', addContestant);
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addContestant(); });
+startBtn.addEventListener('click', startRace);
+resetBtn.addEventListener('click', resetGame);
+  </script>
 </body>
 </html>
